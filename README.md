@@ -1,1 +1,1 @@
-"# CmdTetris" 
+Tetris for Windows console!
