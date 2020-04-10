@@ -23,14 +23,14 @@ const Point CenterBoard(BOARD_SIZE_X / 2, 0);
 
 int board[BOARD_SIZE_Y][BOARD_SIZE_X]
 {
-    {0,0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0,0},
-    {0,0,0,0,0,0,0,0,0,0}
+	{0,0,0,0,0,0,0,0,0,0},
+	{0,0,0,0,0,0,0,0,0,0},
+	{0,0,0,0,0,0,0,0,0,0},
+	{0,0,0,0,0,0,0,0,0,0},
+	{0,0,0,0,0,0,0,0,0,0},
+	{0,0,0,0,0,0,0,0,0,0},
+	{0,0,0,0,0,0,0,0,0,0},
+	{0,0,0,0,0,0,0,0,0,0}
 };
 
 //------------------------------------------------------------------------
@@ -59,24 +59,24 @@ void DrawBoard()
 {
 	Mutex.lock();
 
-    system("cls");
+	system("cls");
 
-    cout << "--------------\n";
+	cout << "--------------\n";
 
-    for (size_t row = 0; row < BOARD_SIZE_Y; ++row)
-    {
-        cout << "|";
-        for (size_t col = 0; col < BOARD_SIZE_X; ++col)
-        {
-            if (board[row][col] == BoardState::Empty)
-                cout << '0';
-            else
-                cout << '*';
-        }
-        cout << "|" << endl;
-    }
+	for (size_t row = 0; row < BOARD_SIZE_Y; ++row)
+	{
+		cout << "|";
+		for (size_t col = 0; col < BOARD_SIZE_X; ++col)
+		{
+			if (board[row][col] == BoardState::Empty)
+				cout << '0';
+			else
+				cout << '*';
+		}
+		cout << "|" << endl;
+	}
 
-    cout << "--------------\n";
+	cout << "--------------\n";
 	cout << "Score: " << Score;
 
 	Mutex.unlock();
@@ -85,45 +85,45 @@ void DrawBoard()
 
 bool TetrominoFall(Tetromino& tetromino)
 {
-    Point positions[TETROMINO_SIZE];
-    tetromino.GetPositions(positions);
+	Point positions[TETROMINO_SIZE];
+	tetromino.GetPositions(positions);
 
-    bool is_fall = true;
-    for (size_t i = 0; i < TETROMINO_SIZE; ++i)
-    {
-        if (positions[i].y == BOARD_SIZE_Y - 1 || board[positions[i].y + 1][positions[i].x] == BoardState::Dead_tetromino)
-        {
-            is_fall = false;
-        }
+	bool is_fall = true;
+	for (size_t i = 0; i < TETROMINO_SIZE; ++i)
+	{
+		if (positions[i].y == BOARD_SIZE_Y - 1 || board[positions[i].y + 1][positions[i].x] == BoardState::Dead_tetromino)
+		{
+			is_fall = false;
+		}
 
-        board[positions[i].y][positions[i].x] = BoardState::Live_tetromino;
-    }
+		board[positions[i].y][positions[i].x] = BoardState::Live_tetromino;
+	}
 
-    return is_fall;
+	return is_fall;
 }
 //------------------------------------------------------------------------
 
 void SetTetrominoPosition(Tetromino&  tetromino)
 {
-    Point positions[TETROMINO_SIZE];
+	Point positions[TETROMINO_SIZE];
 	tetromino.GetPositions(positions);
 
-    for (size_t i = 0; i < TETROMINO_SIZE; ++i)
-    {
-        board[positions[i].y][positions[i].x] = BoardState::Live_tetromino;
-    }
+	for (size_t i = 0; i < TETROMINO_SIZE; ++i)
+	{
+		board[positions[i].y][positions[i].x] = BoardState::Live_tetromino;
+	}
 }
 //------------------------------------------------------------------------
 
 void CleanTetrominoPosition(Tetromino&  tetromino)
 {
-    Point positions[TETROMINO_SIZE];
-    tetromino.GetPositions(positions);
+	Point positions[TETROMINO_SIZE];
+	tetromino.GetPositions(positions);
 
-    for (size_t i = 0; i < TETROMINO_SIZE; ++i)
-    {
+	for (size_t i = 0; i < TETROMINO_SIZE; ++i)
+	{
 		board[positions[i].y][positions[i].x] = BoardState::Empty;
-    }
+	}
 }
 //------------------------------------------------------------------------
 
@@ -193,8 +193,8 @@ void Fall()
 		O_Tetromino
 	};
 
-	std::random_device rd;     // only used once to initialise (seed) engine
-	std::mt19937 rng(rd());    // random-number engine used (Mersenne-Twister in this case)
+	std::random_device rd;	 // only used once to initialise (seed) engine
+	std::mt19937 rng(rd());	// random-number engine used (Mersenne-Twister in this case)
 	std::uniform_int_distribution<int> uni(0, 3); // guaranteed unbiased
 
 	while (Exit == false && GameOver == false)
@@ -253,88 +253,88 @@ void Fall()
 
 int main()
 {
-    auto correct_pos = [&](Tetromino& tetromino)
-    {
-        Point positions[TETROMINO_SIZE];
-        tetromino.GetPositions(positions);
+	auto correct_pos = [&](Tetromino& tetromino)
+	{
+		Point positions[TETROMINO_SIZE];
+		tetromino.GetPositions(positions);
 
-        for (size_t i = 0; i < TETROMINO_SIZE; ++i)
-        {
-            if (positions[i].x < 0 ||
+		for (size_t i = 0; i < TETROMINO_SIZE; ++i)
+		{
+			if (positions[i].x < 0 ||
 				positions[i].x >= BOARD_SIZE_X ||
 				board[positions[i].y][positions[i].x] == 1 ||
 				board[positions[i].y][positions[i].x] == 2)
-            {
-                return false;
-            }
-        }
+			{
+				return false;
+			}
+		}
 
-        return true;
-    };
+		return true;
+	};
 
 	thread fall_thread(Fall);
 	fall_thread.detach();
 
-    while (key != KEY_ESC && GameOver == false)
-    {
-        key = _getch();
+	while (key != KEY_ESC && GameOver == false)
+	{
+		key = _getch();
 
-        if (IsFall && GameOver == false && G_Tetromino)
-        {
-            if (key == KEY_LEFT_ARROW)
-            {
-                CleanTetrominoPosition(*G_Tetromino);
+		if (IsFall && GameOver == false && G_Tetromino)
+		{
+			if (key == KEY_LEFT_ARROW)
+			{
+				CleanTetrominoPosition(*G_Tetromino);
 
 				G_Tetromino->Left();
 
-                if (correct_pos(*G_Tetromino))
-                {
-                    SetTetrominoPosition(*G_Tetromino);
-                    DrawBoard();
-                }
-                else
-                {
+				if (correct_pos(*G_Tetromino))
+				{
+					SetTetrominoPosition(*G_Tetromino);
+					DrawBoard();
+				}
+				else
+				{
 					G_Tetromino->Right();
-                }
-            }
-            else if (key == KEY_RIGHT_ARROW)
-            {
-                CleanTetrominoPosition(*G_Tetromino);
+				}
+			}
+			else if (key == KEY_RIGHT_ARROW)
+			{
+				CleanTetrominoPosition(*G_Tetromino);
 
 				G_Tetromino->Right();
 
-                if (correct_pos(*G_Tetromino))
-                {
-                    SetTetrominoPosition(*G_Tetromino);
-                    DrawBoard();
-                }
-                else
-                {
+				if (correct_pos(*G_Tetromino))
+				{
+					SetTetrominoPosition(*G_Tetromino);
+					DrawBoard();
+				}
+				else
+				{
 					G_Tetromino->Left();
-                }
-            }
-            else if (key == KEY_UP_ARROW)
-            {
-                CleanTetrominoPosition(*G_Tetromino);
+				}
+			}
+			else if (key == KEY_UP_ARROW)
+			{
+				CleanTetrominoPosition(*G_Tetromino);
 
 				G_Tetromino->Rotate(BOARD_SIZE_X, BOARD_SIZE_Y);
 
-                SetTetrominoPosition(*G_Tetromino);
-                DrawBoard();
-            }
+				SetTetrominoPosition(*G_Tetromino);
+				DrawBoard();
+			}
 			else if (key == KEY_ESC)
 			{
 				Exit = true;
 			}
-        }
+		}
 		else if (GameOver)
 		{
 			system("clr");
 			cout << "GAME OVER. SCORE: " << Score;
 		}
-    }
+	}
 
-    //DrawBoard(board);
+	//DrawBoard(board);
 }
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------

@@ -5,31 +5,31 @@
 
 struct Point
 {
-    int8_t x, y;
+	int8_t x, y;
 
-    Point()
-    {
-        x = 0;
-        y = 0;
-    }
-    //------------------------------------------------------------------------
+	Point()
+	{
+		x = 0;
+		y = 0;
+	}
+	//------------------------------------------------------------------------
 
-    Point(int8_t x, int8_t y)
-    {
-        this->x = x;
-        this->y = y;
-    }
-    //------------------------------------------------------------------------
-    
-    Point operator+(Point& p)
-    {
-        Point point(this->x, this->y);
+	Point(int8_t x, int8_t y)
+	{
+		this->x = x;
+		this->y = y;
+	}
+	//------------------------------------------------------------------------
+	
+	Point operator+(Point& p)
+	{
+		Point point(this->x, this->y);
 
-        point.x += p.x;
-        point.y += p.y;
+		point.x += p.x;
+		point.y += p.y;
 
-        return point;
-    }
+		return point;
+	}
 };
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
@@ -40,39 +40,39 @@ struct Point
 
 struct Tetromino
 {
-    uint8_t State = 0;
+	uint8_t State = 0;
 
-    Point map[TETROMINO_SIZE][TETROMINO_SIZE];
+	Point map[TETROMINO_SIZE][TETROMINO_SIZE];
 
 	std::mutex Mutex;
 
-    Tetromino()
-    {
-        Position = Point();
+	Tetromino()
+	{
+		Position = Point();
 
-        for (size_t row = 0; row < TETROMINO_SIZE; ++row)
-        {
-            for (size_t col = 0; col < TETROMINO_SIZE; ++col)
-            {
-                map[row][col] = Point();
-            }
-        }
-    }
-    //------------------------------------------------------------------------
+		for (size_t row = 0; row < TETROMINO_SIZE; ++row)
+		{
+			for (size_t col = 0; col < TETROMINO_SIZE; ++col)
+			{
+				map[row][col] = Point();
+			}
+		}
+	}
+	//------------------------------------------------------------------------
 
-    Tetromino(Point map[TETROMINO_SIZE][TETROMINO_SIZE])
-    {
-        Position = Point();
+	Tetromino(Point map[TETROMINO_SIZE][TETROMINO_SIZE])
+	{
+		Position = Point();
 
-        for (size_t row = 0; row < TETROMINO_SIZE; ++row)
-        {
-            for (size_t col = 0; col < TETROMINO_SIZE; ++col)
-            {
-                this->map[row][col] = map[row][col];
-            }
-        }
-    }
-    //------------------------------------------------------------------------
+		for (size_t row = 0; row < TETROMINO_SIZE; ++row)
+		{
+			for (size_t col = 0; col < TETROMINO_SIZE; ++col)
+			{
+				this->map[row][col] = map[row][col];
+			}
+		}
+	}
+	//------------------------------------------------------------------------
 
 	Tetromino(const Tetromino& tetromino)
 	{
@@ -86,51 +86,51 @@ struct Tetromino
 			}
 		}
 	}
-    //------------------------------------------------------------------------
+	//------------------------------------------------------------------------
 
-    void Down()
-    {
+	void Down()
+	{
 		SetPosition(Point(Position.x, Position.y + 1));
-    }
-    //------------------------------------------------------------------------
+	}
+	//------------------------------------------------------------------------
 
-    void Left()
-    {
+	void Left()
+	{
 		SetPosition(Point(Position.x - 1, Position.y));
-    }
-    //------------------------------------------------------------------------
+	}
+	//------------------------------------------------------------------------
 
-    void Right()
-    {
+	void Right()
+	{
 		SetPosition(Point(Position.x + 1, Position.y));
-    }
-    //------------------------------------------------------------------------
+	}
+	//------------------------------------------------------------------------
 
-    void SetPosition(Point position)
-    {
+	void SetPosition(Point position)
+	{
 		Mutex.lock();
 
-        Position = position;
+		Position = position;
 
 		Mutex.unlock();
-    }
-    //------------------------------------------------------------------------
+	}
+	//------------------------------------------------------------------------
 
-    void GetPositions(Point positions[TETROMINO_SIZE])
-    {
+	void GetPositions(Point positions[TETROMINO_SIZE])
+	{
 		Mutex.lock();
 
-        for (size_t i = 0; i < TETROMINO_SIZE; i++)
-        {
-            positions[i] = map[State][i] + Position;
-        }
+		for (size_t i = 0; i < TETROMINO_SIZE; i++)
+		{
+			positions[i] = map[State][i] + Position;
+		}
 
 		Mutex.unlock();
-    }
-    //------------------------------------------------------------------------
+	}
+	//------------------------------------------------------------------------
 
-    void Rotate(uint8_t max_x, uint8_t max_y)
-    {
+	void Rotate(uint8_t max_x, uint8_t max_y)
+	{
 		uint8_t new_state = (State < 3) ? State + 1 : 0;
 
 		for (size_t i = 0; i < TETROMINO_SIZE; i++)
@@ -145,20 +145,20 @@ struct Tetromino
 		}
 
 		State = new_state;
-    }
-    //------------------------------------------------------------------------
+	}
+	//------------------------------------------------------------------------
 
 private:
-    Point Position;
+	Point Position;
 
 };
 //------------------------------------------------------------------------
 Point L_TetrominoMap[TETROMINO_SIZE][TETROMINO_SIZE]
 {
-    {Point(0, 0), Point(0, 1), Point(0, 2), Point(1, 2)},  // *
-    {Point(0, 0), Point(0, 1), Point(1, 0), Point(2, 0)},  // *
-    {Point(0, 0), Point(0, 1), Point(0, 2), Point(-1, 0)}, // **
-    {Point(0, 0), Point(1, 0), Point(2, 0), Point(2, -1)}  //
+	{Point(0, 0), Point(0, 1), Point(0, 2), Point(1, 2)},  // *
+	{Point(0, 0), Point(0, 1), Point(1, 0), Point(2, 0)},  // *
+	{Point(0, 0), Point(0, 1), Point(0, 2), Point(-1, 0)}, // **
+	{Point(0, 0), Point(1, 0), Point(2, 0), Point(2, -1)}  //
 };
 Tetromino L_Tetromino(L_TetrominoMap);
 //------------------------------------------------------------------------
@@ -175,10 +175,10 @@ Tetromino J_Tetromino(J_TetrominoMap);
 
 Point I_TetrominoMap[TETROMINO_SIZE][TETROMINO_SIZE]
 {
-    {Point(0, 0), Point(0, 1), Point(0, 2), Point(0, 3)}, // *
-    {Point(0, 0), Point(1, 0), Point(2, 0), Point(3, 0)}, // *
-    {Point(0, 0), Point(0, 1), Point(0, 2), Point(0, 3)}, // *
-    {Point(0, 0), Point(1, 0), Point(2, 0), Point(3, 0)}, // *
+	{Point(0, 0), Point(0, 1), Point(0, 2), Point(0, 3)}, // *
+	{Point(0, 0), Point(1, 0), Point(2, 0), Point(3, 0)}, // *
+	{Point(0, 0), Point(0, 1), Point(0, 2), Point(0, 3)}, // *
+	{Point(0, 0), Point(1, 0), Point(2, 0), Point(3, 0)}, // *
 };
 Tetromino I_Tetromino(I_TetrominoMap);
 //------------------------------------------------------------------------
