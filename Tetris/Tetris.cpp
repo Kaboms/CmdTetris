@@ -273,7 +273,7 @@ void StartGame()
 			{
 				CleanTetrominoPosition(*G_Tetromino);
 
-				G_Tetromino->Rotate(BOARD_SIZE_X, BOARD_SIZE_Y);
+				G_Tetromino->Rotate(BOARD_SIZE_X, BOARD_SIZE_Y, *Board);
 
 				SetTetrominoPosition(*G_Tetromino);
 				Board->Update();
@@ -285,7 +285,7 @@ void StartGame()
 		}
 		else if (GameOver)
 		{
-			system("clr");
+			system("cls");
 			cout << "GAME OVER. SCORE: " << Score;
 			_getch();
 		}

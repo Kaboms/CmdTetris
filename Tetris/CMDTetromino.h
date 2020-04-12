@@ -2,6 +2,7 @@
 //------------------------------------------------------------------------
 #include "CMDPoint.h"
 #include <mutex>
+#include "CMDBoard.h"
 //------------------------------------------------------------------------
 #define TETROMINO_SIZE 4
 //------------------------------------------------------------------------
@@ -111,16 +112,20 @@ struct CMDTetromino
 	}
 	//------------------------------------------------------------------------
 
-	void Rotate(uint8_t max_x, uint8_t max_y)
+	void Rotate(uint8_t max_x, uint8_t max_y, CMDBoard& board)
 	{
 		uint8_t new_state = (State < 3) ? State + 1 : 0;
 
 		for (size_t i = 0; i < TETROMINO_SIZE; i++)
 		{
-			if (map[new_state][i].x + Position.x < 0 ||
-				map[new_state][i].x + Position.x >= max_x ||
-				map[new_state][i].y + Position.y < 0 ||
-				map[new_state][i].y + Position.y >= max_y)
+			uint8_t x = map[new_state][i].x + Position.x;
+			uint8_t y = map[new_state][i].y + Position.y;
+
+			if (x < 0 || x >= max_x || y < 0 || y >= max_y)
+			{
+				return;
+			}
+			else if (board.Map[x]->CurrentState != BoardCell::Empty)
 			{
 				return;
 			}
