@@ -148,12 +148,19 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CMDBoard.cpp" />
-    <ClCompile Include="Tetris.cpp" />
+    <ClCompile Include="CMDGui.cpp" />
+    <ClCompile Include="CMDTetromino.cpp" />
+    <ClCompile Include="Key.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="CMDTetris.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CMDBoard.h" />
     <ClInclude Include="CMDPoint.h" />
+    <ClInclude Include="CMDTetris.h" />
     <ClInclude Include="CMDTetromino.h" />
+    <ClInclude Include="CMDGui.h" />
+    <ClInclude Include="Key.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

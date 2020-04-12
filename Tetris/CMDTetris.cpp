@@ -1,3 +1,5 @@
+#include "CMDTetris.h"
+#include <Windows.h>
 #include <iostream>
 #include <chrono>
 #include <thread>
@@ -5,12 +7,80 @@
 #include <mutex>
 #include <atomic>
 #include <random>
-#include "CMDBoard.h"
-#include "CMDTetromino.h"
-#include <Windows.h>
+#include "Key.h"
 //------------------------------------------------------------------------
 using namespace std;
 //------------------------------------------------------------------------
+CMDPoint L_TetrominoMap[TETROMINO_SIZE][TETROMINO_SIZE]
+{
+	{CMDPoint(0, 0), CMDPoint(0, 1), CMDPoint(0, 2), CMDPoint(1, 2)},  // *
+	{CMDPoint(0, 0), CMDPoint(0, 1), CMDPoint(1, 0), CMDPoint(2, 0)},  // *
+	{CMDPoint(0, 0), CMDPoint(0, 1), CMDPoint(0, 2), CMDPoint(-1, 0)}, // **
+	{CMDPoint(0, 0), CMDPoint(1, 0), CMDPoint(2, 0), CMDPoint(2, -1)}  //
+};
+CMDTetromino L_Tetromino(L_TetrominoMap, CMDTetromino::Color::WhiteBlue);
+//------------------------------------------------------------------------
+
+CMDPoint J_TetrominoMap[TETROMINO_SIZE][TETROMINO_SIZE]
+{
+	{CMDPoint(0, 0), CMDPoint(0, 1), CMDPoint(0, 2), CMDPoint(-1, 2)}, //  *
+	{CMDPoint(0, 0), CMDPoint(0, -1), CMDPoint(1, 0), CMDPoint(2, 0)}, //  *
+	{CMDPoint(0, 0), CMDPoint(0, 1), CMDPoint(0, 2), CMDPoint(1, 0)},  // **
+	{CMDPoint(0, 0), CMDPoint(1, 0), CMDPoint(2, 0), CMDPoint(2, 1)}   //
+};
+CMDTetromino J_Tetromino(J_TetrominoMap, CMDTetromino::Color::WhiteGreen);
+//------------------------------------------------------------------------
+
+CMDPoint I_TetrominoMap[TETROMINO_SIZE][TETROMINO_SIZE]
+{
+	{CMDPoint(0, 0), CMDPoint(0, 1), CMDPoint(0, 2), CMDPoint(0, 3)}, // *
+	{CMDPoint(0, 0), CMDPoint(1, 0), CMDPoint(2, 0), CMDPoint(3, 0)}, // *
+	{CMDPoint(0, 0), CMDPoint(0, 1), CMDPoint(0, 2), CMDPoint(0, 3)}, // *
+	{CMDPoint(0, 0), CMDPoint(1, 0), CMDPoint(2, 0), CMDPoint(3, 0)}, // *
+};
+CMDTetromino I_Tetromino(I_TetrominoMap, CMDTetromino::Color::WhiteRed);
+//------------------------------------------------------------------------
+
+CMDPoint O_TetrominoMap[TETROMINO_SIZE][TETROMINO_SIZE]
+{
+	{CMDPoint(0, 0), CMDPoint(0, 1), CMDPoint(1, 0), CMDPoint(1, 1)}, // 
+	{CMDPoint(0, 0), CMDPoint(0, 1), CMDPoint(1, 0), CMDPoint(1, 1)}, // **
+	{CMDPoint(0, 0), CMDPoint(0, 1), CMDPoint(1, 0), CMDPoint(1, 1)}, // **
+	{CMDPoint(0, 0), CMDPoint(0, 1), CMDPoint(1, 0), CMDPoint(1, 1)}, //
+};
+CMDTetromino O_Tetromino(O_TetrominoMap, CMDTetromino::Color::WhitePink);
+//------------------------------------------------------------------------
+
+CMDPoint T_TetrominoMap[TETROMINO_SIZE][TETROMINO_SIZE]
+{
+	{CMDPoint(0, 0), CMDPoint(1, 0), CMDPoint(2, 0), CMDPoint(1, -1)},// 
+	{CMDPoint(1, 0), CMDPoint(1, 1), CMDPoint(1, 2), CMDPoint(2, 1)}, //  *
+	{CMDPoint(0, 0), CMDPoint(1, 0), CMDPoint(2, 0), CMDPoint(1, 1)}, // ***
+	{CMDPoint(1, 0), CMDPoint(1, 1), CMDPoint(1, 2), CMDPoint(0, 1)}, //
+};
+CMDTetromino T_Tetromino(T_TetrominoMap, CMDTetromino::Color::WhiteCian);
+//------------------------------------------------------------------------
+
+CMDPoint Z_TetrominoMap[TETROMINO_SIZE][TETROMINO_SIZE]
+{
+	{CMDPoint(0, 0), CMDPoint(1, 0), CMDPoint(0, 1), CMDPoint(-1, 1)}, // 
+	{CMDPoint(0, 0), CMDPoint(0, 1), CMDPoint(1, 1), CMDPoint(1, 2)},  //  **
+	{CMDPoint(0, 0), CMDPoint(1, 0), CMDPoint(0, 1), CMDPoint(-1, 1)}, // **
+	{CMDPoint(0, 0), CMDPoint(0, 1), CMDPoint(1, 1), CMDPoint(1, 2)},  //
+};
+CMDTetromino Z_Tetromino(Z_TetrominoMap, CMDTetromino::Color::WhiteYellow);
+//------------------------------------------------------------------------
+
+CMDPoint S_TetrominoMap[TETROMINO_SIZE][TETROMINO_SIZE]
+{
+	{CMDPoint(0, 0), CMDPoint(1, 0), CMDPoint(1, 1), CMDPoint(2, 1)}, // 
+	{CMDPoint(0, 0), CMDPoint(0, 1), CMDPoint(1, 0), CMDPoint(1, -1)},// **
+	{CMDPoint(0, 0), CMDPoint(1, 0), CMDPoint(1, 1), CMDPoint(2, 1)}, //  **
+	{CMDPoint(0, 0), CMDPoint(0, 1), CMDPoint(1, 0), CMDPoint(1, -1)},//
+};
+CMDTetromino S_Tetromino(S_TetrominoMap, CMDTetromino::Color::WhiteBrown);
+//------------------------------------------------------------------------
+
 CMDBoard* Board = new CMDBoard();
 
 std::atomic<bool> IsFall = false;
@@ -21,18 +91,11 @@ bool Exit = false;
 bool GameOver = false;
 
 uint64_t Score = 0;
-//------------------------------------------------------------------------
-
-const uint8_t KEY_ESC = 27;
-const uint8_t KEY_UP_ARROW = 72;
-const uint8_t KEY_DOWN_ARROW = 80;
-const uint8_t KEY_LEFT_ARROW = 75;
-const uint8_t KEY_RIGHT_ARROW = 77;
 
 int key = -1;
 //------------------------------------------------------------------------
 
-bool TetrominoFall(CMDTetromino& tetromino)
+bool CMDTetris::TetrominoFall(CMDTetromino& tetromino)
 {
 	CMDPoint positions[TETROMINO_SIZE];
 	tetromino.GetPositions(positions);
@@ -52,7 +115,7 @@ bool TetrominoFall(CMDTetromino& tetromino)
 }
 //------------------------------------------------------------------------
 
-void SetTetrominoPosition(CMDTetromino&  tetromino)
+void CMDTetris::SetTetrominoPosition(CMDTetromino&  tetromino)
 {
 	CMDPoint positions[TETROMINO_SIZE];
 	tetromino.GetPositions(positions);
@@ -64,7 +127,7 @@ void SetTetrominoPosition(CMDTetromino&  tetromino)
 }
 //------------------------------------------------------------------------
 
-void CleanTetrominoPosition(CMDTetromino&  tetromino)
+void CMDTetris::CleanTetrominoPosition(CMDTetromino&  tetromino)
 {
 	CMDPoint positions[TETROMINO_SIZE];
 	tetromino.GetPositions(positions);
@@ -76,7 +139,7 @@ void CleanTetrominoPosition(CMDTetromino&  tetromino)
 }
 //------------------------------------------------------------------------
 
-void AddTetrominoToBoard(CMDTetromino& tetromino)
+void CMDTetris::AddTetrominoToBoard(CMDTetromino& tetromino)
 {
 	if (Board->Map[Board->GetCenter().y + 2][Board->GetCenter().x].CurrentState == BoardCell::State::Empty)
 	{
@@ -90,7 +153,7 @@ void AddTetrominoToBoard(CMDTetromino& tetromino)
 }
 //------------------------------------------------------------------------
 
-void ClearLine()
+void CMDTetris::ClearLine()
 {
 	bool is_line;
 
@@ -133,14 +196,14 @@ void ClearLine()
 }
 //------------------------------------------------------------------------
 
-void Fall()
+void CMDTetris::Fall()
 {
 	CMDTetromino tetrominos[7] =
 	{
 		I_Tetromino,
 		L_Tetromino,
 		J_Tetromino,
-		O_Tetromino, 
+		O_Tetromino,
 		T_Tetromino,
 		Z_Tetromino,
 		S_Tetromino
@@ -172,7 +235,7 @@ void Fall()
 
 		while (IsFall)
 		{
-			if (key != KEY_DOWN_ARROW)
+			if (key != Key::Code::DownArrow)
 			{
 				std::this_thread::sleep_for(std::chrono::seconds(1));
 			}
@@ -204,7 +267,7 @@ void Fall()
 }
 //------------------------------------------------------------------------
 
-void StartGame()
+void CMDTetris::StartGame()
 {
 	auto correct_pos = [&](CMDTetromino& tetromino, CMDPoint vector)
 	{
@@ -233,31 +296,31 @@ void StartGame()
 	thread fall_thread(Fall);
 	fall_thread.detach();
 
-	while (key != KEY_ESC && GameOver == false)
+	while (key != Key::Code::Esc && GameOver == false)
 	{
-		key = _getch();
+		key = Key::GetKey();
 
 		if (IsFall && GameOver == false && G_Tetromino)
 		{
-			if (key != KEY_ESC)
+			if (key != Key::Code::Esc)
 			{
 				CleanTetrominoPosition(*G_Tetromino);
 
-				if (key == KEY_LEFT_ARROW)
+				if (key == Key::Code::LeftArrow)
 				{
 					if (correct_pos(*G_Tetromino, CMDPoint(-1, 0)))
 					{
 						G_Tetromino->Left();
-					}				
+					}
 				}
-				else if (key == KEY_RIGHT_ARROW)
+				else if (key == Key::Code::RightArrow)
 				{
 					if (correct_pos(*G_Tetromino, CMDPoint(1, 0)))
 					{
 						G_Tetromino->Right();
 					}
 				}
-				else if (key == KEY_UP_ARROW)
+				else if (key == Key::Code::UpArrow)
 				{
 					G_Tetromino->Rotate(BOARD_SIZE_X, BOARD_SIZE_Y, *Board);
 				}
@@ -265,7 +328,7 @@ void StartGame()
 				SetTetrominoPosition(*G_Tetromino);
 				Board->Update();
 			}
-			else if (key == KEY_ESC)
+			else if (key == Key::Code::Esc)
 			{
 				Exit = true;
 			}
@@ -275,18 +338,11 @@ void StartGame()
 		{
 			system("cls");
 			cout << "GAME OVER. SCORE: " << Score;
-			_getch();
+			Key::GetKey();
 		}
 	}
 }
 //------------------------------------------------------------------------
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
 
-int main()
-{
-	StartGame();
-
-	_getch();
-}
-//------------------------------------------------------------------------
-//------------------------------------------------------------------------
-//------------------------------------------------------------------------

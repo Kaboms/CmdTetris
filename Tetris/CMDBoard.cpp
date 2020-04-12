@@ -1,10 +1,9 @@
 #include "CMDBoard.h"
 #include <iostream>
 #include <Windows.h>
+#include "CMDGui.h"
 //------------------------------------------------------------------------
 using namespace std;
-//------------------------------------------------------------------------
-HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 //------------------------------------------------------------------------
 
 CMDBoard::CMDBoard()
@@ -15,7 +14,7 @@ CMDBoard::CMDBoard()
 
 void CMDBoard::Draw()
 {
-	SetConsoleTextAttribute(hConsole, 15);
+	CMDGui::SetConsoleTextColor(CMDGui::BrightWhite, CMDGui::Black);
 
 	system("cls");
 
@@ -51,8 +50,8 @@ void CMDBoard::Update()
 			{				
 				pos.X = col + 1;
 				pos.Y = row + 1;
-				SetConsoleCursorPosition(hConsole, pos);
-				SetConsoleTextAttribute(hConsole, Map[row][col].Color);
+				SetConsoleCursorPosition(CMDGui::GetOutputHandle(), pos);
+				CMDGui::SetConsoleTextColor(Map[row][col].Color);
 				
 				if (Map[row][col].CurrentState == BoardCell::State::Empty)
 					cout << '0';
@@ -71,8 +70,8 @@ void CMDBoard::UpdateScore(uint64_t score)
 	COORD pos;
 	pos.X = 0;
 	pos.Y = BOARD_SIZE_Y + 3;
-	SetConsoleCursorPosition(hConsole, pos);
-	SetConsoleTextAttribute(hConsole, 15);
+	SetConsoleCursorPosition(CMDGui::GetOutputHandle(), pos);
+	CMDGui::SetConsoleTextColor(CMDGui::BrightWhite, CMDGui::Black);
 
 	cout << "SCORE: " << score;
 }
