@@ -206,17 +206,19 @@ void Fall()
 
 void StartGame()
 {
-	auto correct_pos = [&](CMDTetromino& tetromino)
+	auto correct_pos = [&](CMDTetromino& tetromino, CMDPoint vector)
 	{
 		CMDPoint positions[TETROMINO_SIZE];
 		tetromino.GetPositions(positions);
 
 		for (size_t i = 0; i < TETROMINO_SIZE; ++i)
 		{
-			if (positions[i].x < 0 ||
-				positions[i].x >= BOARD_SIZE_X ||
-				Board->Map[positions[i].y][positions[i].x].CurrentState == BoardCell::State::Live_tetromino ||
-				Board->Map[positions[i].y][positions[i].x].CurrentState == BoardCell::State::Dead_tetromino)
+			CMDPoint pos(positions[i] + vector);
+
+			if (pos.x < 0 ||
+				pos.x >= BOARD_SIZE_X ||
+				Board->Map[pos.y][pos.x].CurrentState == BoardCell::State::Live_tetromino ||
+				Board->Map[pos.y][pos.x].CurrentState == BoardCell::State::Dead_tetromino)
 			{
 				return false;
 			}
@@ -237,43 +239,28 @@ void StartGame()
 
 		if (IsFall && GameOver == false && G_Tetromino)
 		{
-			if (key == KEY_LEFT_ARROW)
+			if (key != KEY_ESC)
 			{
 				CleanTetrominoPosition(*G_Tetromino);
 
-				G_Tetromino->Left();
-
-				if (correct_pos(*G_Tetromino))
+				if (key == KEY_LEFT_ARROW)
 				{
-					SetTetrominoPosition(*G_Tetromino);
-					Board->Update();
+					if (correct_pos(*G_Tetromino, CMDPoint(-1, 0)))
+					{
+						G_Tetromino->Left();
+					}				
 				}
-				else
+				else if (key == KEY_RIGHT_ARROW)
 				{
-					G_Tetromino->Right();
+					if (correct_pos(*G_Tetromino, CMDPoint(1, 0)))
+					{
+						G_Tetromino->Right();
+					}
 				}
-			}
-			else if (key == KEY_RIGHT_ARROW)
-			{
-				CleanTetrominoPosition(*G_Tetromino);
-
-				G_Tetromino->Right();
-
-				if (correct_pos(*G_Tetromino))
+				else if (key == KEY_UP_ARROW)
 				{
-					SetTetrominoPosition(*G_Tetromino);
-					Board->Update();
+					G_Tetromino->Rotate(BOARD_SIZE_X, BOARD_SIZE_Y, *Board);
 				}
-				else
-				{
-					G_Tetromino->Left();
-				}
-			}
-			else if (key == KEY_UP_ARROW)
-			{
-				CleanTetrominoPosition(*G_Tetromino);
-
-				G_Tetromino->Rotate(BOARD_SIZE_X, BOARD_SIZE_Y, *Board);
 
 				SetTetrominoPosition(*G_Tetromino);
 				Board->Update();
@@ -282,6 +269,7 @@ void StartGame()
 			{
 				Exit = true;
 			}
+
 		}
 		else if (GameOver)
 		{
