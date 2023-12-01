@@ -26,9 +26,9 @@ void CMDBoard::Draw()
 		for (size_t col = 0; col < BOARD_SIZE_X; ++col)
 		{
 			if (Map[row][col].CurrentState == BoardCell::State::Empty)
-				cout << '0';
+				cout << EmtpySymbol;
 			else
-				cout << '*';
+				cout << TetrominoSymbol;
 		}
 		cout << "|" << endl;
 	}
@@ -39,8 +39,6 @@ void CMDBoard::Draw()
 
 void CMDBoard::Update()
 {
-	Mutex.lock();
-
 	COORD pos;
 	for (size_t row = 0; row < BOARD_SIZE_Y; ++row)
 	{
@@ -54,14 +52,13 @@ void CMDBoard::Update()
 				CMDGui::SetConsoleTextColor(Map[row][col].Color);
 				
 				if (Map[row][col].CurrentState == BoardCell::State::Empty)
-					cout << '0';
+					cout << EmtpySymbol;
 				else
-					cout << '*';
+					cout << TetrominoSymbol;
 			}
 			PreviosMap[row][col] = Map[row][col];
 		}
 	}
-	Mutex.unlock();
 }
 //------------------------------------------------------------------------
 

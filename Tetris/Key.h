@@ -6,18 +6,27 @@
 class Key
 {
 public:
+	Key(uint8_t code)
+	{
+		Code = code;
+	}
+
 	static uint8_t GetKey();
 
-	enum Code
-	{
-		Enter = 13,
-		Esc = 27,
-		Space = 32,
-		UpArrow = 72,
-		DownArrow = 80,
-		LeftArrow = 75,
-		RightArrow = 77
-	};
+	static bool KeyPressed(uint8_t key);
+
+	bool IsPressed();
+
+	bool HandlePressedOnce();
+
+	void Handle();
+
+protected:
+	uint8_t Code;
+
+	bool PressedOnce = false;
+
+	bool WaitRelease = false;
 };
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------

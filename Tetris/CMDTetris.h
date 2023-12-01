@@ -10,7 +10,7 @@ namespace CMDTetris
 	void CleanTetrominoPosition(CMDTetromino&  tetromino);
 	void AddTetrominoToBoard(CMDTetromino& tetromino);
 	void ClearLine();
-	void Fall();
+	bool CanMoveToDirection(CMDTetromino& tetromino, CMDPoint vector);
 	void StartGame();
 };
 //----------------------------------------------------------------------

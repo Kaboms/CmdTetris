@@ -1,7 +1,6 @@
 #pragma once
 //------------------------------------------------------------------------
 #include "CMDPoint.h"
-#include <mutex>
 //------------------------------------------------------------------------
 #define BOARD_SIZE_X 12
 #define BOARD_SIZE_Y 14
@@ -47,11 +46,13 @@ public:
 public:	
 	BoardCell Map[BOARD_SIZE_Y][BOARD_SIZE_X];
 
+	char EmtpySymbol = ' ';
+	char TetrominoSymbol = '*';
+
 private:
 	CMDPoint CenterBoard;
 
 	BoardCell PreviosMap[BOARD_SIZE_Y][BOARD_SIZE_X];
-	std::mutex Mutex;
 
 };
 //------------------------------------------------------------------------

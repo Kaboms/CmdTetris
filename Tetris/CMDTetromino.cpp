@@ -65,24 +65,16 @@ void CMDTetromino::Right()
 
 void CMDTetromino::SetPosition(CMDPoint position)
 {
-	Mutex.lock();
-
 	Position = position;
-
-	Mutex.unlock();
 }
 //------------------------------------------------------------------------
 
 void CMDTetromino::GetPositions(CMDPoint positions[TETROMINO_SIZE])
 {
-	Mutex.lock();
-
 	for (size_t i = 0; i < TETROMINO_SIZE; i++)
 	{
 		positions[i] = map[State][i] + Position;
 	}
-
-	Mutex.unlock();
 }
 //------------------------------------------------------------------------
 

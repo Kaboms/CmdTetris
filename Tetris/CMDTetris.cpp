@@ -2,10 +2,7 @@
 #include <Windows.h>
 #include <iostream>
 #include <chrono>
-#include <thread>
 #include <conio.h>
-#include <mutex>
-#include <atomic>
 #include <random>
 #include "Key.h"
 //------------------------------------------------------------------------
@@ -83,16 +80,13 @@ CMDTetromino S_Tetromino(S_TetrominoMap, CMDTetromino::Color::WhiteBrown);
 
 CMDBoard* Board = new CMDBoard();
 
-std::atomic<bool> IsFall = false;
-
-CMDTetromino* G_Tetromino;
-
+bool IsFall = false;
 bool Exit = false;
 bool GameOver = false;
 
 uint64_t Score = 0;
 
-int key = -1;
+CMDTetromino CurrentTetromino;
 //------------------------------------------------------------------------
 
 bool CMDTetris::TetrominoFall(CMDTetromino& tetromino)
@@ -196,9 +190,34 @@ void CMDTetris::ClearLine()
 }
 //------------------------------------------------------------------------
 
-void CMDTetris::Fall()
+bool CMDTetris::CanMoveToDirection(CMDTetromino& tetromino, CMDPoint vector)
 {
-	CMDTetromino tetrominos[7] =
+	CMDPoint positions[TETROMINO_SIZE];
+	tetromino.GetPositions(positions);
+
+	for (size_t i = 0; i < TETROMINO_SIZE; ++i)
+	{
+		CMDPoint pos(positions[i] + vector);
+
+		if (pos.x < 0 ||
+			pos.x >= BOARD_SIZE_X ||
+			Board->Map[pos.y][pos.x].CurrentState == BoardCell::State::Live_tetromino ||
+			Board->Map[pos.y][pos.x].CurrentState == BoardCell::State::Dead_tetromino)
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+//------------------------------------------------------------------------
+
+void CMDTetris::StartGame()
+{
+	Board->Draw();
+	Board->UpdateScore(Score);
+
+	static CMDTetromino tetrominos[7] =
 	{
 		I_Tetromino,
 		L_Tetromino,
@@ -213,9 +232,21 @@ void CMDTetris::Fall()
 	std::mt19937 rng(rd());
 	std::uniform_int_distribution<int> uni(0, 6);
 
-	while (Exit == false && GameOver == false)
+	auto delta_time = std::chrono::nanoseconds();
+	auto draw_delta_time = std::chrono::nanoseconds();
+	auto input_delta_time = std::chrono::nanoseconds();
+
+	int default_fall_timeout = 500;
+	int fall_timeout = default_fall_timeout;
+
+	Key left_arrow(VK_LEFT);
+	Key right_rrow(VK_RIGHT);
+	Key up_urrow(VK_UP);
+	Key down_arrow(VK_DOWN);
+
+	while (GameOver == false && Exit == false)
 	{
-		int random_integer = uni(rng);
+		auto call_start_timestamp = std::chrono::system_clock::now();
 
 		if (IsFall == false)
 		{
@@ -225,121 +256,95 @@ void CMDTetris::Fall()
 
 			int random_integer = uni(rng);
 
-			G_Tetromino = &CMDTetromino(tetrominos[random_integer]);
+			CurrentTetromino = tetrominos[random_integer];
 
-			AddTetrominoToBoard(*G_Tetromino);
+			AddTetrominoToBoard(CurrentTetromino);
 		}
 
-		if (GameOver || Exit)
-			return;
-
-		while (IsFall)
+		if (GameOver == false)
 		{
-			if (key != Key::Code::DownArrow)
-			{
-				std::this_thread::sleep_for(std::chrono::seconds(1));
-			}
-			else
-			{
-				key = -1;
-			}
-
-			CleanTetrominoPosition(*G_Tetromino);
-
-			G_Tetromino->Down();
-
-			IsFall = TetrominoFall(*G_Tetromino);
-
-			if (IsFall == false)
-			{
-				CMDPoint positions[TETROMINO_SIZE];
-				G_Tetromino->GetPositions(positions);
-
-				for (size_t i = 0; i < TETROMINO_SIZE; ++i)
-				{
-					Board->SetMapCell(positions[i], BoardCell(G_Tetromino->CurrentColor, BoardCell::State::Dead_tetromino));
-				}
-			}
-
-			Board->Update();
-		}
-	}
-}
-//------------------------------------------------------------------------
-
-void CMDTetris::StartGame()
-{
-	auto correct_pos = [&](CMDTetromino& tetromino, CMDPoint vector)
-	{
-		CMDPoint positions[TETROMINO_SIZE];
-		tetromino.GetPositions(positions);
-
-		for (size_t i = 0; i < TETROMINO_SIZE; ++i)
-		{
-			CMDPoint pos(positions[i] + vector);
-
-			if (pos.x < 0 ||
-				pos.x >= BOARD_SIZE_X ||
-				Board->Map[pos.y][pos.x].CurrentState == BoardCell::State::Live_tetromino ||
-				Board->Map[pos.y][pos.x].CurrentState == BoardCell::State::Dead_tetromino)
-			{
-				return false;
-			}
-		}
-
-		return true;
-	};
-
-	Board->Draw();
-	Board->UpdateScore(Score);
-
-	thread fall_thread(Fall);
-	fall_thread.detach();
-
-	while (key != Key::Code::Esc && GameOver == false)
-	{
-		key = Key::GetKey();
-
-		if (IsFall && GameOver == false && G_Tetromino)
-		{
-			if (key != Key::Code::Esc)
-			{
-				CleanTetrominoPosition(*G_Tetromino);
-
-				if (key == Key::Code::LeftArrow)
-				{
-					if (correct_pos(*G_Tetromino, CMDPoint(-1, 0)))
-					{
-						G_Tetromino->Left();
-					}
-				}
-				else if (key == Key::Code::RightArrow)
-				{
-					if (correct_pos(*G_Tetromino, CMDPoint(1, 0)))
-					{
-						G_Tetromino->Right();
-					}
-				}
-				else if (key == Key::Code::UpArrow)
-				{
-					G_Tetromino->Rotate(BOARD_SIZE_X, BOARD_SIZE_Y, *Board);
-				}
-
-				SetTetrominoPosition(*G_Tetromino);
-				Board->Update();
-			}
-			else if (key == Key::Code::Esc)
+			if (Key::KeyPressed(VK_ESCAPE))
 			{
 				Exit = true;
 			}
 
+			left_arrow.Handle();
+			right_rrow.Handle();
+			up_urrow.Handle();
+			down_arrow.Handle();
+
+			fall_timeout = down_arrow.IsPressed() ? 100 : default_fall_timeout;
+
+			if ((delta_time - input_delta_time) > std::chrono::milliseconds(100))
+			{
+				input_delta_time = delta_time;
+
+				if (left_arrow.HandlePressedOnce())
+				{
+					CleanTetrominoPosition(CurrentTetromino);
+
+					if (CanMoveToDirection(CurrentTetromino, CMDPoint(-1, 0)))
+					{
+						CurrentTetromino.Left();
+					}
+				}
+
+				if (right_rrow.HandlePressedOnce())
+				{
+					// Move to left
+					CleanTetrominoPosition(CurrentTetromino);
+
+					if (CanMoveToDirection(CurrentTetromino, CMDPoint(1, 0)))
+					{
+						CurrentTetromino.Right();
+					}
+				}
+				else if (up_urrow.HandlePressedOnce())
+				{
+					CleanTetrominoPosition(CurrentTetromino);
+
+					CurrentTetromino.Rotate(BOARD_SIZE_X, BOARD_SIZE_Y, *Board);
+				}
+
+
+				SetTetrominoPosition(CurrentTetromino);
+				Board->Update();
+			}
+
+			if ((delta_time - draw_delta_time) > std::chrono::milliseconds(fall_timeout))
+			{
+				draw_delta_time = delta_time;
+
+				CleanTetrominoPosition(CurrentTetromino);
+
+				CurrentTetromino.Down();
+
+				IsFall = TetrominoFall(CurrentTetromino);
+
+				if (IsFall == false)
+				{
+					CMDPoint positions[TETROMINO_SIZE];
+					CurrentTetromino.GetPositions(positions);
+
+					for (size_t i = 0; i < TETROMINO_SIZE; ++i)
+					{
+						Board->SetMapCell(positions[i], BoardCell(CurrentTetromino.CurrentColor, BoardCell::State::Dead_tetromino));
+					}
+				}
+
+				Board->Update();
+			}
 		}
-		else if (GameOver)
+
+		if (GameOver || Exit)
 		{
 			system("cls");
 			cout << "GAME OVER. SCORE: " << Score;
-			Key::GetKey();
 		}
+
+		delta_time += std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now() - call_start_timestamp);
+
+		std::this_thread::sleep_for(std::chrono::seconds(0));
 	}
 }
 //------------------------------------------------------------------------
